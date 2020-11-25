@@ -73,8 +73,14 @@ class HistogramReader:
 class CsvHistogramReader(HistogramReader):
     def get_hist(self, file_path: Union[str]) -> Histogram:
         self.csv_path = file_path
-        data = np.loadtxt(self.csv_path, delimiter=',')
-        return Histogram(data.T[1])
+        data = np.loadtxt(self.csv_path, delimiter=',').T
+        bin_num = int(data[0][-1])+1
+        hist = np.array([0]*bin_num)
+        for i in  range(len(data[0])):
+            hist_idx = int(data[0][i])
+            hist[hist_idx] = int(data[1][i])
+
+        return Histogram(hist)
 
 class TimeseriesReader:
     def get_hist(self, file_path: Union[str]) -> Histogram:
