@@ -67,7 +67,7 @@ class DataReaderFactory:
 class HistogramReader:
     def get_hist(self, file_path: Union[str]) -> Histogram:
         pass
-    def read_timeseries(self, file_path: Union[str]) -> Timeseries:
+    def get_timeseries(self, file_path: Union[str]) -> Timeseries:
         return None
 
 class CsvHistogramReader(HistogramReader):
@@ -84,13 +84,14 @@ class TimeseriesReader:
 
 
 class CsvTimeseriesReader(TimeseriesReader):
-    def get_hist(self, file_path: Union[str], bin_size_ns=1000) -> Timeseries:
-        data = np.loadtxt(file_path, delimiter=',')
-        bins = int(np.ceil(np.max(data)/bin_size_ns))
-        hist_raw, _ = np.histogram(data, bins=bins, range=(0, np.max(data)))
+    def get_hist(self, file_path: Union[str]) -> Timeseries:
+        data = np.loadtxt(file_path, delimiter=',').T[1]
+        bins = int(np.ceil(np.max(data)))+1
+        range_max = int(np.ceil(np.max(data)))+1
+        hist_raw, _ = np.histogram(data, bins=bins, range=(0, range_max))
         return Histogram(hist_raw)
 
-    def get_timeseries(self, file_path: Union[str], bin_size_ns=1000) -> Timeseries:
-        data = np.loadtxt(file_path, delimiter=',')
-        data_sec = data *1e-9
-        return Timeseries(data_sec)
+    def get_timeseries(self, file_path: Union[str]) -> Timeseries:
+        data = np.loadtxt(file_path, delimiter=',').T[1]
+        data_usec = data
+        return Timeseries(data_usec)
