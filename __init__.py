@@ -1,2 +1,2 @@
-from .ros_modelling import read_json
-from .data_reader import Histogram
+from script import ros_modelling
+from script import data_reader
