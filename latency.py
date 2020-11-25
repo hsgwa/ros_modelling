@@ -46,14 +46,22 @@ class Latency:
         self.__hist = None
         self.__route = route
         self.__child = child
+        self.__timeseries = None
 
+    def has_timeseries():
+        return self.__timeseries is not None
     @property
     def hist(self):
         return self.__hist
-
     @hist.setter
     def hist(self, hist):
         self.__hist = hist
+    @property
+    def timeseries(self):
+        return self.__timeseries
+    @timeseries.setter
+    def timeseries(self, timeseries):
+        self.__timeseries = timeseries
 
     @property
     def route(self):

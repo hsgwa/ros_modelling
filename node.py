@@ -1,9 +1,9 @@
 from typing import List, Union, Any, Callable, Dict
 from .latency import Latency, System, Component, TraceRoute
-from .histogram import Histogram
 from .trace_point import TracePoint, Timer, Publish, Subscribe
 from .callback import Callback, TimerCallback, SubscribeCallback
 from .util import Util
+from .data_reader import DataReaderFactory, Histogram
 
 class Execution(Component):
     pass
@@ -18,7 +18,7 @@ class Node(System):
         self.__callbacks = []
         self.__executions = []
     @classmethod
-    def create(cls, histogram_reader, node_json):
+    def create(cls, node_json):
         node = Node(node_json['name'])
         if 'start_node' in node_json.keys():
             node.start = node_json['start_node']
@@ -42,8 +42,9 @@ class Node(System):
             route = TraceRoute(start_point, end_point)
             callback = Callback.create(
                 callback_json['type'], callback_json['name'], route=route)
-            callback.latency.hist = histogram_reader.read(
-                callback_json['latency'])
+            reader = DataReaderFactory.create(Util.ext(callback_json['latency']), callback_json['latency_type'])
+            callback.latency.hist = reader.get_hist(callback_json['latency'])
+            callback.latency.timeseries = reader.get_timeseries(callback_json['latency'])
             node.add_callback(callback)
 
         if 'execution' in node_json.keys():
@@ -54,8 +55,9 @@ class Node(System):
                     name=execution_['to']).latency.head
                 route = TraceRoute(start_point, end_point)
                 execution = Execution(route)
-                execution.latency.hist = histogram_reader.read(execution_[
-                                                               'latency'])
+                reader = DataReaderFactory.create(Util.ext(callback_json['latency']), callback_json['latency_type'])
+                execution.latency.hist = reader.get_hist(execution_['latency'])
+                execution.latency.timeseries = reader.get_timeseries(execution_['latency'])
                 node.add_execution(execution)
 
         return node

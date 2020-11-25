@@ -1,7 +1,7 @@
 from typing import List, Union, Any, Callable, Dict
 from .latency import Latency, System, Component, TraceRoute
 from .trace_point import TracePoint
-from .histogram import Histogram
+from .data_reader import Histogram, DataReaderFactory
 from .util import Util
 from .node import Node
 
@@ -172,11 +172,12 @@ class Application(System):
                 node.append(node_)
         return node
 
-    def set_latency(self, histogram_reader, communication_json):
+    def set_latency(self, communication_json):
         for communication in self.communications:
             if communication.publisher_node.name == communication_json['publisher'] and \
                communication.subscriber_node.name == communication_json['subscriber'] and \
                communication.name == communication_json['topic_name']:
-                communication.latency.hist = histogram_reader.read(
-                    communication_json['latency'])
+                reader = DataReaderFactory.create(Util.ext(communication_json['latency']), communication_json['latency_type'])
+                communication.latency.hist = reader.get_hist(communication_json['latency'])
+                communication.latency.timeseries = reader.get_timeseries(communication_json['latency'])
 
