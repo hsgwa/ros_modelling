@@ -3,6 +3,7 @@ import numpy as np
 
 class Histogram:
     __normalize = False
+    __trim = False
 
     def __init__(self, raw: Union[np.array]):
         if Histogram.__normalize:
@@ -18,6 +19,10 @@ class Histogram:
         return cls.__normalize
 
     @classmethod
+    def trim(cls, use):
+        cls.__trim = use
+
+    @classmethod
     def sum(cls, histgrams):
         hist = Histogram(histgrams[0].raw)
         for histgram in histgrams[1:]:
@@ -27,8 +32,11 @@ class Histogram:
     def __add__(self, hist_):
         # todo : length validation
         tmp = np.convolve(self.__raw, hist_.raw, mode='full')
-        tmp[len(self.__raw)-1] += np.sum(tmp[len(self.__raw):])  # オーバーした分
-        tmp = tmp[:len(self.__raw)]
+        if Histogram.__trim:
+            tmp[len(self.__raw)-1] += np.sum(tmp[len(self.__raw):])  # オーバーした分
+            tmp = tmp[:len(self.__raw)]
+        else:
+            tmp = np.trim_zeros(tmp, "b")
         if Histogram.__normalize:
             tmp = tmp / np.sum(tmp)
         return self.__class__(tmp)
