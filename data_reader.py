@@ -6,8 +6,6 @@ class Histogram:
     __trim = False
 
     def __init__(self, raw: Union[np.array]):
-        if Histogram.__normalize:
-            raw = raw / np.sum(raw)
         self.__raw = np.trim_zeros(raw, "b")
 
     @classmethod
@@ -36,12 +34,12 @@ class Histogram:
             tmp = tmp[:len(self.__raw)]
         else:
             tmp = np.trim_zeros(tmp, "b")
-        if Histogram.__normalize:
-            tmp = tmp / np.sum(tmp)
         return self.__class__(tmp)
 
     @property
     def raw(self) -> np.ndarray:
+        if Histogram.__normalize:
+            return self.__raw / np.sum(self.__raw)
         return self.__raw
 
 class Timeseries:
